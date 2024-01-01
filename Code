@@ -1,0 +1,75 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_squared_error
+
+# Load the housing dataset
+data = pd.read_csv('/Users/mohamedkamara/Library/Containers/com.microsoft.Excel/Data/Downloads/housing.csv')
+
+# Drop rows with missing values
+data = data.dropna()
+
+# Separate features (X) and target variable (y)
+X = data.drop('median_house_value', axis=1)
+y = data['median_house_value']
+
+# Encode categorical features using one-hot encoding
+data_encoded = pd.get_dummies(data, columns=['ocean_proximity'])
+
+# Split the encoded data into features and target variable
+X = data_encoded.drop('median_house_value', axis=1)
+y = data_encoded['median_house_value']
+
+# Split data into training and testing sets (80% train, 20% test)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Train the Linear Regression model
+model = LinearRegression()
+model.fit(X_train, y_train)
+
+# Make predictions on the test set
+predictions = model.predict(X_test)
+
+# Evaluate model performance using Mean Squared Error
+mse = mean_squared_error(y_test, predictions)
+print(f"Mean Squared Error: {mse}")
+
+# Visualizing: Scatter Plot of actual vs predicted house values
+plt.figure(figsize=(8, 6))
+plt.scatter(y_test, predictions, alpha=0.5)
+plt.xlabel('Actual House Value')
+plt.ylabel('Predicted House Value')
+plt.title('Actual vs Predicted House Values')
+plt.grid(True)
+plt.show()
+
+# Visualizing: Histogram of median_house_value
+plt.figure(figsize=(8, 6))
+plt.hist(data['median_house_value'], bins=30, color='skyblue', edgecolor='black')
+plt.xlabel('Median House Value')
+plt.ylabel('Frequency')
+plt.title('Distribution of Median House Values')
+plt.grid(True)
+plt.show()
+
+# Visualizing: Histograms of numerical features
+numerical_features = X.select_dtypes(include=['float64', 'int64']).columns
+
+# Set up subplots for each feature
+fig, axes = plt.subplots(nrows=3, ncols=3, figsize=(15, 10))
+fig.subplots_adjust(hspace=0.5, wspace=0.5)
+
+for i, column in enumerate(numerical_features):
+    row = i // 3
+    col = i % 3
+    ax = axes[row, col]
+
+    X[column].plot(kind='hist', ax=ax, bins=20)
+    ax.set_title(column)
+    ax.set_xlabel('Value')
+    ax.set_ylabel('Frequency')
+
+plt.tight_layout()
+plt.show()
+
